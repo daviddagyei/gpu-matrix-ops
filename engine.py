@@ -13,6 +13,12 @@ def _error_or_empty_df(columns: list[str]) -> pd.DataFrame:
     return pd.DataFrame(columns=columns)
 
 
+def build_symbol_config(config: dict, symbol: str) -> dict:
+    symbol_config = dict(config)
+    symbol_config["symbol"] = symbol
+    return symbol_config
+
+
 def _run_risk_rules(signal_df: pd.DataFrame, positions_df: pd.DataFrame, orders_df: pd.DataFrame, config: dict) -> pd.DataFrame:
     rows = []
     for rule_name in config.get("risk_rules", []):
@@ -39,9 +45,22 @@ def run_engine_bundle(config: dict | None = None) -> dict[str, pd.DataFrame]:
     strategy = STRATEGY_REGISTRY[resolved["strategy"]]
     signal_df = strategy(market_data_df if "ok" not in market_data_df.columns else pd.DataFrame(), resolved)
 
-    risk_df = _run_risk_rules(signal_df, positions_df if "ok" not in positions_df.columns else pd.DataFrame(), orders_df if "ok" not in orders_df.columns else pd.DataFrame(), resolved)
+    should_run_risk_rules = True
+    if not signal_df.empty:
+        signal_value = str(signal_df.iloc[0].get("signal", "DO_NOTHING"))
+        should_submit_order = bool(signal_df.iloc[0].get("should_submit_order", signal_value != "DO_NOTHING"))
+        should_run_risk_rules = should_submit_order and signal_value != "DO_NOTHING"
 
-    if not risk_df.empty and not risk_df["ok"].all():
+    risk_df = _error_or_empty_df(["rule_name", "ok", "reason", "symbol"])
+    if should_run_risk_rules:
+        risk_df = _run_risk_rules(
+            signal_df,
+            positions_df if "ok" not in positions_df.columns else pd.DataFrame(),
+            orders_df if "ok" not in orders_df.columns else pd.DataFrame(),
+            resolved,
+        )
+
+    if should_run_risk_rules and not risk_df.empty and not risk_df["ok"].all():
         failing = risk_df[~risk_df["ok"]].iloc[0]
         signal_df = signal_df.copy()
         signal_df.loc[0, "should_submit_order"] = False

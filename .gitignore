@@ -5,6 +5,9 @@ __pycache__/
 *.pyc
 
 logs/trade_log.csv
+logs/live_runner.pid
+logs/live_runner_config.json
+logs/live_runner_log.csv
 
 uberstuff/
 .codex
