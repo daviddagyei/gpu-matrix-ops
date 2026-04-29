@@ -1,5 +1,0 @@
-alpaca-py
-pandas
-python-dotenv
-pytest
-backtesting
