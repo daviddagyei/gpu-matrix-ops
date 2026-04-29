@@ -1,6 +1,6 @@
-# GPU-Accelerated Matrix Operations
+# GPU-Accelerated Synthetic Classification and Matrix Workloads
 
-This repository contains a concise notebook comparing NumPy and CuPy for matrix operations on CPU and GPU, plus a synthetic classification workload. It highlights runtime differences, memory-transfer overhead, model quality, and the point where GPU acceleration becomes useful.
+This repository contains a single notebook that compares NumPy and CuPy on two complementary workloads: synthetic matrix-heavy benchmarks and a synthetic Gaussian-mixture classification problem. It is meant to show both GPU programming performance and ML evaluation in one place.
 
 ## Install
 
@@ -10,13 +10,19 @@ Use the CUDA 13 wheel for this machine:
 
 If CUDA is not installed, the notebook still runs the NumPy path and skips the GPU path.
 
-## Contents
+## Notebook Sections
 
-- `gpu_matrix_ops.ipynb`: walkthrough, benchmark suite, and synthetic classification example
-- CPU path: NumPy matrix operations
-- GPU path: CuPy matrix operations
-- Notes on batching, parallel execution, and overhead tradeoffs
+- Matrix multiply examples with small concrete inputs
+- Synthetic square-matrix sweeps with compute-only and end-to-end GPU timing
+- Synthetic linear-layer benchmarks that resemble ML inference kernels
+- Batched GEMM benchmarks for larger GPU-friendly workloads
+- Synthetic classification from Gaussian distributions
+- Softmax regression training on NumPy and CuPy
+- Accuracy, macro precision, macro recall, macro F1, and confusion matrices
+- Plots for runtime, loss curves, class scatter, and confusion matrices
 
-## Summary
+## What To Look For
 
-The main takeaway is that GPU acceleration helps most on larger workloads or repeated batches, especially when data can stay resident on the device. For smaller inputs, CPU vectorization can be faster once transfer overhead is included.
+- GPU speedups are easier to see on larger matrices, larger batch sizes, and batched linear algebra.
+- End-to-end GPU timing is the honest comparison because it includes data transfer.
+- The classification section shows that the notebook is not only about speed, but also about model quality and evaluation.
